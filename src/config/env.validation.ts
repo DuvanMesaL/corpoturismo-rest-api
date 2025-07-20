@@ -13,14 +13,15 @@ class EnvironmentVariables {
   NODE_ENV = 'development';
 
   @IsNumber()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   @Transform(({ value }) => Number.parseInt(value, 10))
   PORT = 3001;
 
-  // Database
   @IsString()
   DB_HOST = 'localhost';
 
   @IsNumber()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   @Transform(({ value }) => Number.parseInt(value, 10))
   DB_PORT = 5432;
 
@@ -33,11 +34,9 @@ class EnvironmentVariables {
   @IsString()
   DB_NAME: string;
 
-  // MongoDB
   @IsString()
   MONGODB_URI = 'mongodb://localhost:27017/turnos_logs';
 
-  // JWT
   @IsString()
   JWT_SECRET: string;
 
@@ -45,7 +44,6 @@ class EnvironmentVariables {
   @IsOptional()
   JWT_EXPIRES_IN = '24h';
 
-  // Email
   @IsString()
   BREVO_API_KEY: string;
 
@@ -55,17 +53,18 @@ class EnvironmentVariables {
   @IsString()
   BREVO_SENDER_NAME: string;
 
-  // Frontend
   @IsUrl()
   @IsOptional()
   FRONTEND_URL = 'http://localhost:3000';
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const validatedConfig = plainToClass(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const errors = validateSync(validatedConfig, {
     skipMissingProperties: false,
   });
@@ -74,5 +73,6 @@ export function validateEnvironment(config: Record<string, unknown>) {
     throw new Error(`Environment validation failed: ${errors.toString()}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return validatedConfig;
 }

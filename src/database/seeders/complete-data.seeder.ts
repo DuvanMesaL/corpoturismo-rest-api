@@ -97,11 +97,16 @@ export class CompleteDataSeeder {
         });
         if (!user) {
           const role = roles.find((r) => r.name === userData.role);
-          const hashedPassword = await bcrypt.hash(userData.password, 12);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          const hashedPassword = await bcrypt.hash(
+            String(userData.password),
+            12,
+          );
 
           user = queryRunner.manager.create(User, {
             uuid: uuidv4(),
             email: userData.email,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             password: hashedPassword,
             firstName: userData.firstName,
             firstLastname: userData.firstLastname,
