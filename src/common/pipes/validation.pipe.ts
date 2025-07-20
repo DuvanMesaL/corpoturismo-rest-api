@@ -1,42 +1,59 @@
 import {
-  type PipeTransform,
   Injectable,
-  type ArgumentMetadata,
+  PipeTransform,
+  ArgumentMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { validate, ValidationError, ValidatorOptions } from 'class-validator';
+import { plainToInstance, ClassConstructor } from 'class-transformer';
 
 @Injectable()
-export class CustomValidationPipe implements PipeTransform<any> {
-  async transform(value: any, { metatype }: ArgumentMetadata) {
-    if (!metatype || !this.toValidate(metatype)) {
+export class CustomValidationPipe implements PipeTransform {
+  async transform(
+    value: unknown,
+    metadata: ArgumentMetadata,
+  ): Promise<unknown> {
+    const { metatype } = metadata;
+
+    if (!this.isClassConstructor(metatype) || !this.isPlainObject(value)) {
       return value;
     }
 
-    const object = plainToClass(metatype, value);
-    const errors = await validate(object, {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const dto = plainToInstance(metatype, value);
+
+    const errors: ValidationError[] = await validate(dto, {
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true,
-    });
+    } as ValidatorOptions);
 
     if (errors.length > 0) {
-      const errorMessages = errors.map((error) => {
-        return Object.values(error.constraints || {}).join(', ');
-      });
-
+      const detailed: Record<string, string[]> = {};
+      for (const err of errors) {
+        if (err.constraints) {
+          detailed[err.property] = Object.values(err.constraints);
+        }
+      }
       throw new BadRequestException({
         message: 'Errores de validación',
-        errors: errorMessages,
+        errors: detailed,
+        dto: metatype.name,
       });
     }
 
-    return object;
+    return dto;
   }
 
-  private toValidate(metatype: Function): boolean {
-    const types: Function[] = [String, Boolean, Number, Array, Object];
-    return !types.includes(metatype);
+  private isClassConstructor(
+    metatype: unknown,
+  ): metatype is ClassConstructor<Record<string, unknown>> {
+    const primitives = [String, Boolean, Number, Array, Object] as const;
+    return (
+      typeof metatype === 'function' && !primitives.includes(metatype as any)
+    );
+  }
+
+  private isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
   }
 }
