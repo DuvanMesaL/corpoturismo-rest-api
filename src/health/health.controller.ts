@@ -16,8 +16,7 @@ export class HealthController {
 
   @Public()
   @Get('db')
-  async checkDatabase() {
-    // Aquí podrías agregar verificaciones de base de datos
+  checkDatabase() {
     return {
       status: 'ok',
       database: 'connected',

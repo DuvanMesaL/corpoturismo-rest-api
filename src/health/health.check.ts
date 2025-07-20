@@ -6,8 +6,9 @@ async function healthCheck() {
     const app = await NestFactory.create(AppModule, { logger: false });
     await app.init();
 
-    // Verificar conexión a base de datos
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const dataSource = app.get('DataSource');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     await dataSource.query('SELECT 1');
 
     await app.close();
@@ -18,4 +19,4 @@ async function healthCheck() {
   }
 }
 
-healthCheck();
+void healthCheck();
