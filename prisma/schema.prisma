@@ -114,7 +114,7 @@ model Recalada {
 
 model Turno {
   id              String      @id @default(cuid())
-  recaladaId      String
+  recaladaId      String?
   guiaId          String?
   creadorId       String
   fechaInicio     DateTime
@@ -131,8 +131,6 @@ model Turno {
   creador         User        @relation("TurnoCreador", fields: [creadorId], references: [id])
   
   atenciones      Atencion[]
-  
-  @@map("turnos")
 }
 
 model TipoAtencion {
