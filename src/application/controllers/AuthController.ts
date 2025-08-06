@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AuthService } from '../services/AuthService';
 import { auditLogger } from '../../infrastructure/logging/winston-logger';
 import { AuthRequest } from '../../infrastructure/middleware/auth.middleware';
+import { validateCompleteRegistration } from '../validators/user.validators';
 
 export class AuthController {
   private authService: AuthService;
@@ -91,7 +92,17 @@ export class AuthController {
 
   async completeRegistration(req: Request, res: Response): Promise<void> {
     try {
-      const registrationData = req.body;
+      // Validar datos de entrada
+      const validation = validateCompleteRegistration(req.body);
+      if (!validation.success) {
+        res.status(400).json({ 
+          error: 'Datos inválidos',
+          details: validation.errors 
+        });
+        return;
+      }
+
+      const registrationData = validation.data;
 
       const result = await this.authService.completeRegistration(registrationData, {
         ip: req.ip,

@@ -32,4 +32,10 @@ router.delete('/:id',
   userController.deleteUser.bind(userController)
 );
 
+// Reenviar invitación a usuario (solo admins)
+router.post('/:id/resend-invitation', 
+  requireRole(['super_admin', 'admin']), 
+  userController.resendInvitation.bind(userController)
+);
+
 export default router;
