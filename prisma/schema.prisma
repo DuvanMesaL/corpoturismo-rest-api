@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  permisos    String[] // JSON array de permisos
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  usuarios    User[]
+  
+  @@map("roles")
+}
+
+model User {
+  id                    String    @id @default(cuid())
+  uuid                  String    @unique @default(cuid())
+  email                 String    @unique
+  password              String?
+  tipoIdentificacion    String?
+  numeroIdentificacion  String?   @unique
+  primerNombre          String?
+  segundoNombre         String?
+  primerApellido        String?
+  segundoApellido       String?
+  telefono              String?
+  rolId                 String
+  estado                EstadoUsuario @default(INACTIVO)
+  fechaInvitacion       DateTime  @default(now())
+  fechaActivacion       DateTime?
+  usuarioInvitadorId    String?
+  ipRegistro            String?
+  dispositivoRegistro   String?
+  esTemporal            Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relations
+  rol                   Role      @relation(fields: [rolId], references: [id])
+  usuarioInvitador      User?     @relation("UserInvitations", fields: [usuarioInvitadorId], references: [id])
+  usuariosInvitados     User[]    @relation("UserInvitations")
+  
+  // Turnos
+  turnosTomados         Turno[]   @relation("TurnoGuia")
+  turnosCreados         Turno[]   @relation("TurnoCreador")
+  
+  @@map("usuarios")
+}
+
+model Buque {
+  id              String   @id @default(cuid())
+  nombre          String
+  bandera         String?
+  eslora          Float?
+  manga           Float?
+  calado          Float?
+  tonelaje        Float?
+  tipoEmbarcacion String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  recaladas       Recalada[]
+  
+  @@map("buques")
+}
+
+model Puerto {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  codigo      String   @unique
+  ciudad      String
+  pais        String
+  coordenadas String? // JSON con lat, lng
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  recaladasOrigen  Recalada[] @relation("PuertoOrigen")
+  recaladasDestino Recalada[] @relation("PuertoDestino")
+  
+  @@map("puertos")
+}
+
+model Recalada {
+  id                String     @id @default(cuid())
+  buqueId           String
+  puertoOrigenId    String?
+  puertoDestinoId   String?
+  fechaLlegada      DateTime
+  fechaSalida       DateTime?
+  numeroViaje       String?
+  observaciones     String?
+  estado            EstadoRecalada @default(PROGRAMADA)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  // Relations
+  buque             Buque      @relation(fields: [buqueId], references: [id])
+  puertoOrigen      Puerto?    @relation("PuertoOrigen", fields: [puertoOrigenId], references: [id])
+  puertoDestino     Puerto?    @relation("PuertoDestino", fields: [puertoDestinoId], references: [id])
+  
+  turnos            Turno[]
+  atenciones        Atencion[]
+  
+  @@map("recaladas")
+}
+
+model Turno {
+  id              String      @id @default(cuid())
+  recaladaId      String
+  guiaId          String?
+  creadorId       String
+  fechaInicio     DateTime
+  fechaFin        DateTime
+  estado          EstadoTurno @default(DISPONIBLE)
+  observaciones   String?
+  horasTrabajadas Float?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Relations
+  recalada        Recalada    @relation(fields: [recaladaId], references: [id])
+  guia            User?       @relation("TurnoGuia", fields: [guiaId], references: [id])
+  creador         User        @relation("TurnoCreador", fields: [creadorId], references: [id])
+  
+  atenciones      Atencion[]
+  
+  @@map("turnos")
+}
+
+model TipoAtencion {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  duracion    Int?     // minutos estimados
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  atenciones  Atencion[]
+  
+  @@map("tipos_atencion")
+}
+
+model Atencion {
+  id              String   @id @default(cuid())
+  recaladaId      String
+  turnoId         String?
+  tipoAtencionId  String
+  descripcion     String?
+  fechaInicio     DateTime
+  fechaFin        DateTime?
+  estado          EstadoAtencion @default(PENDIENTE)
+  observaciones   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  recalada        Recalada     @relation(fields: [recaladaId], references: [id])
+  turno           Turno?       @relation(fields: [turnoId], references: [id])
+  tipoAtencion    TipoAtencion @relation(fields: [tipoAtencionId], references: [id])
+  
+  @@map("atenciones")
+}
+
+enum EstadoUsuario {
+  INACTIVO
+  ACTIVO
+}
+
+enum EstadoRecalada {
+  PROGRAMADA
+  EN_PUERTO
+  FINALIZADA
+  CANCELADA
+}
+
+enum EstadoTurno {
+  DISPONIBLE
+  TOMADO
+  EN_USO
+  FINALIZADO
+  CANCELADO
+}
+
+enum EstadoAtencion {
+  PENDIENTE
+  EN_PROGRESO
+  COMPLETADA
+  CANCELADA
+}
