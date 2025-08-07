@@ -11,7 +11,7 @@ model Role {
   id          String   @id @default(cuid())
   nombre      String   @unique
   descripcion String?
-  permisos    String[] // JSON array de permisos
+  permisos    String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -43,12 +43,10 @@ model User {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   
-  // Relations
   rol                   Role      @relation(fields: [rolId], references: [id])
   usuarioInvitador      User?     @relation("UserInvitations", fields: [usuarioInvitadorId], references: [id])
   usuariosInvitados     User[]    @relation("UserInvitations")
   
-  // Turnos
   turnosTomados         Turno[]   @relation("TurnoGuia")
   turnosCreados         Turno[]   @relation("TurnoCreador")
   
@@ -78,7 +76,7 @@ model Puerto {
   codigo      String   @unique
   ciudad      String
   pais        String
-  coordenadas String? // JSON con lat, lng
+  coordenadas String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -101,7 +99,6 @@ model Recalada {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   
-  // Relations
   buque             Buque      @relation(fields: [buqueId], references: [id])
   puertoOrigen      Puerto?    @relation("PuertoOrigen", fields: [puertoOrigenId], references: [id])
   puertoDestino     Puerto?    @relation("PuertoDestino", fields: [puertoDestinoId], references: [id])
@@ -125,19 +122,19 @@ model Turno {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  // Relations
-  recalada        Recalada    @relation(fields: [recaladaId], references: [id])
+  recalada        Recalada?    @relation(fields: [recaladaId], references: [id])
   guia            User?       @relation("TurnoGuia", fields: [guiaId], references: [id])
   creador         User        @relation("TurnoCreador", fields: [creadorId], references: [id])
   
   atenciones      Atencion[]
+  @@map("turnos")
 }
 
 model TipoAtencion {
   id          String   @id @default(cuid())
   nombre      String   @unique
   descripcion String?
-  duracion    Int?     // minutos estimados
+  duracion    Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -159,7 +156,6 @@ model Atencion {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  // Relations
   recalada        Recalada     @relation(fields: [recaladaId], references: [id])
   turno           Turno?       @relation(fields: [turnoId], references: [id])
   tipoAtencion    TipoAtencion @relation(fields: [tipoAtencionId], references: [id])
