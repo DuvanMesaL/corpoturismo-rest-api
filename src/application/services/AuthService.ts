@@ -46,7 +46,7 @@ export class AuthService {
       }
 
       // Verificar estado del usuario
-      if (user.estado !== 'activo') {
+      if (String(user.estado).toUpperCase() !== 'ACTIVO') {
         return {
           success: false,
           error: 'Usuario inactivo. Completa tu registro primero.'
@@ -60,7 +60,6 @@ export class AuthService {
           error: 'Usuario sin contraseña configurada'
         };
       }
-
       const isValidPassword = await bcrypt.compare(password, user.password);
       
       if (!isValidPassword) {

@@ -22,7 +22,7 @@ INSERT INTO "usuarios" (
   'user_super_admin',
   uuid_generate_v4(),
   'admin@corpoturismo.com',
-  '$2b$12$LQv3c1yqBwEHFl5aysHdsOHiP9.hdisA8u5YzkwjjbEunoTXTT4.m', -- password: admin123
+  '$2a$12$ing5GU1gLwkxDHFW7Rk/WOigE1Rp4pcA2xmN1hwkVjYiIn84aA2/C',
   'Super',
   'Admin',
   'role_super_admin',
