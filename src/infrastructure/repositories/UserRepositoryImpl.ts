@@ -1,11 +1,17 @@
-import { PrismaClient } from '@prisma/client';
-import { User, CreateUserDto, CompleteRegistrationDto } from '../../domain/entities/User';
-import { UserRepository } from '../../domain/repositories/UserRepository';
+import { PrismaClient } from "@prisma/client";
+import {
+  User,
+  CreateUserDto,
+  CompleteRegistrationDto,
+} from "../../domain/entities/User";
+import { UserRepository } from "../../domain/repositories/UserRepository";
 
 const prisma = new PrismaClient();
 
 export class UserRepositoryImpl implements UserRepository {
-  async create(userData: CreateUserDto & { uuid: string; password: string }): Promise<User> {
+  async create(
+    userData: CreateUserDto & { uuid: string; password: string }
+  ): Promise<User> {
     const user = await prisma.user.create({
       data: {
         uuid: userData.uuid,
@@ -13,9 +19,9 @@ export class UserRepositoryImpl implements UserRepository {
         password: userData.password,
         rolId: userData.rolId,
         usuarioInvitadorId: userData.usuarioInvitadorId,
-        estado: 'INACTIVO',
+        estado: "INACTIVO",
         esTemporal: true,
-        fechaInvitacion: new Date()
+        fechaInvitacion: new Date(),
       },
       include: {
         rol: true,
@@ -24,10 +30,10 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaUserToEntity(user);
@@ -43,10 +49,10 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return user ? this.mapPrismaUserToEntity(user) : null;
@@ -62,10 +68,10 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return user ? this.mapPrismaUserToEntity(user) : null;
@@ -81,22 +87,31 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return user ? this.mapPrismaUserToEntity(user) : null;
   }
 
   async update(id: string, userData: Partial<User>): Promise<User> {
+    const prismaData: any = {
+      ...userData,
+      updatedAt: new Date(),
+    };
+
+    if (userData.rolId !== undefined) {
+      prismaData.rolId =
+        typeof userData.rolId === "string"
+          ? parseInt(userData.rolId)
+          : userData.rolId;
+    }
+
     const user = await prisma.user.update({
       where: { id },
-      data: {
-        ...userData,
-        updatedAt: new Date()
-      },
+      data: prismaData,
       include: {
         rol: true,
         usuarioInvitador: {
@@ -104,16 +119,19 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaUserToEntity(user);
   }
 
-  async completeRegistration(uuid: string, data: CompleteRegistrationDto): Promise<User> {
+  async completeRegistration(
+    uuid: string,
+    data: CompleteRegistrationDto
+  ): Promise<User> {
     const user = await prisma.user.update({
       where: { uuid },
       data: {
@@ -125,10 +143,10 @@ export class UserRepositoryImpl implements UserRepository {
         segundoApellido: data.segundoApellido,
         telefono: data.telefono,
         password: data.password,
-        estado: 'ACTIVO',
+        estado: "ACTIVO",
         fechaActivacion: new Date(),
         esTemporal: false,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       include: {
         rol: true,
@@ -137,17 +155,17 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
-      }
+            primerApellido: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaUserToEntity(user);
   }
 
   async findAll(filters?: {
-    estado?: 'activo' | 'inactivo';
+    estado?: "activo" | "inactivo";
     rolId?: string;
     search?: string;
     page?: number;
@@ -165,10 +183,15 @@ export class UserRepositoryImpl implements UserRepository {
 
     if (filters?.search) {
       where.OR = [
-        { email: { contains: filters.search, mode: 'insensitive' } },
-        { primerNombre: { contains: filters.search, mode: 'insensitive' } },
-        { primerApellido: { contains: filters.search, mode: 'insensitive' } },
-        { numeroIdentificacion: { contains: filters.search, mode: 'insensitive' } }
+        { email: { contains: filters.search, mode: "insensitive" } },
+        { primerNombre: { contains: filters.search, mode: "insensitive" } },
+        { primerApellido: { contains: filters.search, mode: "insensitive" } },
+        {
+          numeroIdentificacion: {
+            contains: filters.search,
+            mode: "insensitive",
+          },
+        },
       ];
     }
 
@@ -185,23 +208,23 @@ export class UserRepositoryImpl implements UserRepository {
             id: true,
             email: true,
             primerNombre: true,
-            primerApellido: true
-          }
-        }
+            primerApellido: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       skip,
-      take: limit
+      take: limit,
     });
 
-    return users.map(user => this.mapPrismaUserToEntity(user));
+    return users.map((user: any) => this.mapPrismaUserToEntity(user));
   }
 
   async delete(id: string): Promise<void> {
     await prisma.user.delete({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -219,7 +242,7 @@ export class UserRepositoryImpl implements UserRepository {
       segundoApellido: prismaUser.segundoApellido,
       telefono: prismaUser.telefono,
       rolId: prismaUser.rolId,
-      estado: prismaUser.estado.toLowerCase() as 'activo' | 'inactivo',
+      estado: prismaUser.estado.toLowerCase() as "activo" | "inactivo",
       fechaInvitacion: prismaUser.fechaInvitacion,
       fechaActivacion: prismaUser.fechaActivacion,
       usuarioInvitadorId: prismaUser.usuarioInvitadorId,
@@ -228,14 +251,16 @@ export class UserRepositoryImpl implements UserRepository {
       esTemporal: prismaUser.esTemporal,
       createdAt: prismaUser.createdAt,
       updatedAt: prismaUser.updatedAt,
-      rol: prismaUser.rol ? {
-        id: prismaUser.rol.id,
-        nombre: prismaUser.rol.nombre,
-        descripcion: prismaUser.rol.descripcion,
-        permisos: prismaUser.rol.permisos,
-        createdAt: prismaUser.rol.createdAt,
-        updatedAt: prismaUser.rol.updatedAt
-      } : undefined
+      rol: prismaUser.rol
+        ? {
+            id: prismaUser.rol.id,
+            nombre: prismaUser.rol.nombre,
+            descripcion: prismaUser.rol.descripcion,
+            permisos: prismaUser.rol.permisos,
+            createdAt: prismaUser.rol.createdAt,
+            updatedAt: prismaUser.rol.updatedAt,
+          }
+        : undefined,
     };
   }
 }

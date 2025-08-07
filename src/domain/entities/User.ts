@@ -1,3 +1,5 @@
+import { Role } from './Role';
+
 export interface User {
   id: string;
   uuid: string;
@@ -11,6 +13,7 @@ export interface User {
   segundoApellido?: string;
   telefono?: string;
   rolId: string;
+  rol?: Role;
   estado: 'inactivo' | 'activo';
   fechaInvitacion: Date;
   fechaActivacion?: Date;
@@ -21,6 +24,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 export interface CreateUserDto {
   email: string;

@@ -1,4 +1,4 @@
-import { Buque, CreateBuqueDto } from '../entities/Buque';
+import { Buque, CreateBuqueDto } from "../entities/Buque";
 
 export interface BuqueRepository {
   create(buqueData: CreateBuqueDto): Promise<Buque>;

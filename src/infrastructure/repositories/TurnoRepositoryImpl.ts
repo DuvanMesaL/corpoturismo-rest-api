@@ -1,11 +1,17 @@
-import { PrismaClient } from '@prisma/client';
-import { Turno, CreateTurnoDto, EstadoTurno } from '../../domain/entities/Turno';
-import { TurnoRepository } from '../../domain/repositories/TurnoRepository';
+import { PrismaClient } from "@prisma/client";
+import {
+  Turno,
+  CreateTurnoDto,
+  EstadoTurno,
+} from "../../domain/entities/Turno";
+import { TurnoRepository } from "../../domain/repositories/TurnoRepository";
 
 const prisma = new PrismaClient();
 
 export class TurnoRepositoryImpl implements TurnoRepository {
-  async create(turnoData: CreateTurnoDto & { creadorId: string }): Promise<Turno> {
+  async create(
+    turnoData: CreateTurnoDto & { creadorId: string }
+  ): Promise<Turno> {
     const turno = await prisma.turno.create({
       data: {
         recaladaId: turnoData.recaladaId,
@@ -13,15 +19,15 @@ export class TurnoRepositoryImpl implements TurnoRepository {
         fechaInicio: turnoData.fechaInicio,
         fechaFin: turnoData.fechaFin,
         observaciones: turnoData.observaciones,
-        estado: 'DISPONIBLE'
+        estado: "DISPONIBLE",
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -29,8 +35,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -38,11 +44,11 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
-        atenciones: true
-      }
+        atenciones: true,
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
@@ -56,8 +62,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -65,8 +71,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -74,15 +80,15 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         atenciones: {
           include: {
-            tipoAtencion: true
-          }
-        }
-      }
+            tipoAtencion: true,
+          },
+        },
+      },
     });
 
     return turno ? this.mapPrismaTurnoToEntity(turno) : null;
@@ -94,8 +100,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
       include: {
         recalada: {
           include: {
-            buque: true
-          }
+            buque: true,
+          },
         },
         guia: {
           select: {
@@ -103,8 +109,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -112,16 +118,16 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
+            rol: true,
+          },
+        },
       },
       orderBy: {
-        fechaInicio: 'asc'
-      }
+        fechaInicio: "asc",
+      },
     });
 
-    return turnos.map(turno => this.mapPrismaTurnoToEntity(turno));
+    return turnos.map((turno: any) => this.mapPrismaTurnoToEntity(turno));
   }
 
   async findAvailable(filters?: {
@@ -130,7 +136,7 @@ export class TurnoRepositoryImpl implements TurnoRepository {
     recaladaId?: string;
   }): Promise<Turno[]> {
     const where: any = {
-      estado: 'DISPONIBLE'
+      estado: "DISPONIBLE",
     };
 
     if (filters?.fechaInicio) {
@@ -152,8 +158,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         creador: {
           select: {
@@ -161,25 +167,28 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
+            rol: true,
+          },
+        },
       },
       orderBy: {
-        fechaInicio: 'asc'
-      }
+        fechaInicio: "asc",
+      },
     });
 
-    return turnos.map(turno => this.mapPrismaTurnoToEntity(turno));
+    return turnos.map((turno: any) => this.mapPrismaTurnoToEntity(turno));
   }
 
-  async findByGuia(guiaId: string, filters?: {
-    estado?: EstadoTurno;
-    fechaInicio?: Date;
-    fechaFin?: Date;
-  }): Promise<Turno[]> {
+  async findByGuia(
+    guiaId: string,
+    filters?: {
+      estado?: EstadoTurno;
+      fechaInicio?: Date;
+      fechaFin?: Date;
+    }
+  ): Promise<Turno[]> {
     const where: any = {
-      guiaId
+      guiaId,
     };
 
     if (filters?.estado) {
@@ -201,8 +210,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         creador: {
           select: {
@@ -210,21 +219,21 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         atenciones: {
           include: {
-            tipoAtencion: true
-          }
-        }
+            tipoAtencion: true,
+          },
+        },
       },
       orderBy: {
-        fechaInicio: 'desc'
-      }
+        fechaInicio: "desc",
+      },
     });
 
-    return turnos.map(turno => this.mapPrismaTurnoToEntity(turno));
+    return turnos.map((turno: any) => this.mapPrismaTurnoToEntity(turno));
   }
 
   async update(id: string, turnoData: Partial<Turno>): Promise<Turno> {
@@ -242,8 +251,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -251,8 +260,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -260,39 +269,38 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         atenciones: {
           include: {
-            tipoAtencion: true
-          }
-        }
-      }
+            tipoAtencion: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
   }
 
-
   async tomarTurno(turnoId: string, guiaId: string): Promise<Turno> {
     const turno = await prisma.turno.update({
-      where: { 
+      where: {
         id: turnoId,
-        estado: 'DISPONIBLE' // Solo se puede tomar si está disponible
+        estado: "DISPONIBLE", // Solo se puede tomar si está disponible
       },
       data: {
         guiaId,
-        estado: 'TOMADO',
-        updatedAt: new Date()
+        estado: "TOMADO",
+        updatedAt: new Date(),
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -300,8 +308,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -309,10 +317,10 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
-      }
+            rol: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
@@ -320,22 +328,22 @@ export class TurnoRepositoryImpl implements TurnoRepository {
 
   async liberarTurno(turnoId: string): Promise<Turno> {
     const turno = await prisma.turno.update({
-      where: { 
+      where: {
         id: turnoId,
-        estado: { in: ['TOMADO', 'EN_USO'] }
+        estado: { in: ["TOMADO", "EN_USO"] },
       },
       data: {
         guiaId: null,
-        estado: 'DISPONIBLE',
-        updatedAt: new Date()
+        estado: "DISPONIBLE",
+        updatedAt: new Date(),
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         creador: {
           select: {
@@ -343,10 +351,10 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
-      }
+            rol: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
@@ -354,22 +362,22 @@ export class TurnoRepositoryImpl implements TurnoRepository {
 
   async usarTurno(turnoId: string, observaciones?: string): Promise<Turno> {
     const turno = await prisma.turno.update({
-      where: { 
+      where: {
         id: turnoId,
-        estado: 'TOMADO'
+        estado: "TOMADO",
       },
       data: {
-        estado: 'EN_USO',
+        estado: "EN_USO",
         observaciones,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -377,8 +385,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -386,33 +394,36 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
-      }
+            rol: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
   }
 
-  async terminarTurno(turnoId: string, horasTrabajadas?: number): Promise<Turno> {
+  async terminarTurno(
+    turnoId: string,
+    horasTrabajadas?: number
+  ): Promise<Turno> {
     const turno = await prisma.turno.update({
-      where: { 
+      where: {
         id: turnoId,
-        estado: 'EN_USO'
+        estado: "EN_USO",
       },
       data: {
-        estado: 'FINALIZADO',
+        estado: "FINALIZADO",
         horasTrabajadas,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -420,8 +431,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -429,15 +440,15 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         atenciones: {
           include: {
-            tipoAtencion: true
-          }
-        }
-      }
+            tipoAtencion: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
@@ -445,22 +456,22 @@ export class TurnoRepositoryImpl implements TurnoRepository {
 
   async cancelarTurno(turnoId: string, motivo?: string): Promise<Turno> {
     const turno = await prisma.turno.update({
-      where: { 
+      where: {
         id: turnoId,
-        estado: { not: 'FINALIZADO' }
+        estado: { not: "FINALIZADO" },
       },
       data: {
-        estado: 'CANCELADO',
+        estado: "CANCELADO",
         observaciones: motivo,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       include: {
         recalada: {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -468,8 +479,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -477,10 +488,10 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
-      }
+            rol: true,
+          },
+        },
+      },
     });
 
     return this.mapPrismaTurnoToEntity(turno);
@@ -528,8 +539,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
           include: {
             buque: true,
             puertoOrigen: true,
-            puertoDestino: true
-          }
+            puertoDestino: true,
+          },
         },
         guia: {
           select: {
@@ -537,8 +548,8 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
+            rol: true,
+          },
         },
         creador: {
           select: {
@@ -546,23 +557,23 @@ export class TurnoRepositoryImpl implements TurnoRepository {
             email: true,
             primerNombre: true,
             primerApellido: true,
-            rol: true
-          }
-        }
+            rol: true,
+          },
+        },
       },
       orderBy: {
-        fechaInicio: 'desc'
+        fechaInicio: "desc",
       },
       skip,
-      take: limit
+      take: limit,
     });
 
-    return turnos.map(turno => this.mapPrismaTurnoToEntity(turno));
+    return turnos.map((turno: any) => this.mapPrismaTurnoToEntity(turno));
   }
 
   async delete(id: string): Promise<void> {
     await prisma.turno.delete({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -582,7 +593,7 @@ export class TurnoRepositoryImpl implements TurnoRepository {
       recalada: prismaTurno.recalada,
       guia: prismaTurno.guia,
       creador: prismaTurno.creador,
-      atenciones: prismaTurno.atenciones
+      atenciones: prismaTurno.atenciones,
     };
   }
 }

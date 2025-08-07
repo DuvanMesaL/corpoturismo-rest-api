@@ -29,6 +29,11 @@ export class TurnoController {
         email: req.user!.email
       };
 
+      if (!turnoData) {
+        res.status(400).json({ error: 'Datos de turno incompletos.' });
+        return;
+      }
+
       const result = await this.turnoService.createTurno(turnoData, creatorInfo);
 
       if (!result.success) {
@@ -79,7 +84,7 @@ export class TurnoController {
       const { id: turnoId } = req.params;
       const validation = validateUsarTurno(req.body);
       
-      if (!validation.success) {
+      if (!validation.success || !validation.data) {
         res.status(400).json({ 
           error: 'Datos inválidos',
           details: validation.errors 

@@ -10,7 +10,7 @@ export interface Recalada {
   estado: EstadoRecalada;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Relations
   buque?: any;
   puertoOrigen?: any;
@@ -20,10 +20,10 @@ export interface Recalada {
 }
 
 export enum EstadoRecalada {
-  PROGRAMADA = 'PROGRAMADA',
-  EN_PUERTO = 'EN_PUERTO',
-  FINALIZADA = 'FINALIZADA',
-  CANCELADA = 'CANCELADA'
+  PROGRAMADA = "PROGRAMADA",
+  EN_PUERTO = "EN_PUERTO",
+  FINALIZADA = "FINALIZADA",
+  CANCELADA = "CANCELADA",
 }
 
 export interface CreateRecaladaDto {

@@ -15,7 +15,7 @@ export class UserController {
     try {
       // Validar datos de entrada
       const validation = validateCreateUser(req.body);
-      if (!validation.success) {
+      if (!validation.success || !validation.data) {
         res.status(400).json({ 
           error: 'Datos inválidos',
           details: validation.errors 
@@ -154,7 +154,7 @@ export class UserController {
       
       // Validar datos de entrada
       const validation = validateUpdateUser(req.body);
-      if (!validation.success) {
+      if (!validation.success || !validation.data) {
         res.status(400).json({ 
           error: 'Datos inválidos',
           details: validation.errors 

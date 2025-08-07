@@ -9,7 +9,7 @@ export interface Buque {
   tipoEmbarcacion?: string;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Relations
   recaladas?: any[];
 }

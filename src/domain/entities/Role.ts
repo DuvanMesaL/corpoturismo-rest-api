@@ -8,8 +8,8 @@ export interface Role {
 }
 
 export enum RoleType {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
-  SUPERVISOR = 'supervisor',
-  GUIA = 'guia'
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  SUPERVISOR = "supervisor",
+  GUIA = "guia",
 }

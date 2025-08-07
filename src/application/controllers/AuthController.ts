@@ -104,10 +104,16 @@ export class AuthController {
 
       const registrationData = validation.data;
 
+      if (!registrationData) {
+        res.status(400).json({ error: 'Datos de registro incompletos.' });
+        return;
+      }
+
       const result = await this.authService.completeRegistration(registrationData, {
         ip: req.ip,
         userAgent: req.get('User-Agent') || ''
       });
+
 
       if (!result.success) {
         res.status(400).json({ error: result.error });

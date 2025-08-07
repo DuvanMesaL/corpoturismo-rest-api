@@ -10,7 +10,7 @@ export interface Turno {
   horasTrabajadas?: number;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Relations
   recalada?: any;
   guia?: any;
@@ -19,11 +19,11 @@ export interface Turno {
 }
 
 export enum EstadoTurno {
-  DISPONIBLE = 'DISPONIBLE',
-  TOMADO = 'TOMADO',
-  EN_USO = 'EN_USO',
-  FINALIZADO = 'FINALIZADO',
-  CANCELADO = 'CANCELADO'
+  DISPONIBLE = "DISPONIBLE",
+  TOMADO = "TOMADO",
+  EN_USO = "EN_USO",
+  FINALIZADO = "FINALIZADO",
+  CANCELADO = "CANCELADO",
 }
 
 export interface CreateTurnoDto {

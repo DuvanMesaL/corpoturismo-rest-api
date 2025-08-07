@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-import { auditLogger } from '../logging/winston-logger';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { auditLogger } from "../logging/winston-logger";
 
 const prisma = new PrismaClient();
 
@@ -23,51 +23,51 @@ export const authenticateToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     auditLogger.log({
-      accion: 'acceso_denegado',
-      tipo: 'advertencia',
-      mensaje: 'Token no proporcionado',
+      accion: "acceso_denegado",
+      tipo: "advertencia",
+      mensaje: "Token no proporcionado",
       ip: req.ip,
-      user_agent: req.get('User-Agent'),
+      user_agent: req.get("User-Agent"),
       endpoint: req.path,
       metodo_http: req.method,
-      status_code: 401
+      status_code: 401,
     });
 
-    return res.status(401).json({ 
-      error: 'Token de acceso requerido' 
+    return res.status(401).json({
+      error: "Token de acceso requerido",
     });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       include: {
-        rol: true
-      }
+        rol: true,
+      },
     });
 
-    if (!user || user.estado !== 'ACTIVO') {
+    if (!user || user.estado !== "ACTIVO") {
       auditLogger.log({
         usuario_id: decoded.userId,
-        accion: 'acceso_denegado',
-        tipo: 'advertencia',
-        mensaje: 'Usuario inactivo o no encontrado',
+        accion: "acceso_denegado",
+        tipo: "advertencia",
+        mensaje: "Usuario inactivo o no encontrado",
         ip: req.ip,
-        user_agent: req.get('User-Agent'),
+        user_agent: req.get("User-Agent"),
         endpoint: req.path,
         metodo_http: req.method,
-        status_code: 401
+        status_code: 401,
       });
 
-      return res.status(401).json({ 
-        error: 'Usuario no autorizado' 
+      return res.status(401).json({
+        error: "Usuario no autorizado",
       });
     }
 
@@ -78,26 +78,26 @@ export const authenticateToken = async (
       rol: {
         id: user.rol.id,
         nombre: user.rol.nombre,
-        permisos: user.rol.permisos
-      }
+        permisos: user.rol.permisos,
+      },
     };
 
     next();
   } catch (error) {
     auditLogger.log({
-      accion: 'token_invalido',
-      tipo: 'error',
-      mensaje: 'Token JWT inválido',
+      accion: "token_invalido",
+      tipo: "error",
+      mensaje: "Token JWT inválido",
       ip: req.ip,
-      user_agent: req.get('User-Agent'),
+      user_agent: req.get("User-Agent"),
       endpoint: req.path,
       metodo_http: req.method,
       status_code: 403,
-      detalles: { error: (error as Error).message }
+      detalles: { error: (error as Error).message },
     });
 
-    return res.status(403).json({ 
-      error: 'Token inválido' 
+    return res.status(403).json({
+      error: "Token inválido",
     });
   }
 };
@@ -105,34 +105,34 @@ export const authenticateToken = async (
 export const requireRole = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ 
-        error: 'Usuario no autenticado' 
+      return res.status(401).json({
+        error: "Usuario no autenticado",
       });
     }
 
     const hasRole = roles.includes(req.user.rol.nombre);
-    
+
     if (!hasRole) {
       auditLogger.log({
         usuario_id: req.user.id,
-        accion: 'acceso_denegado_rol',
-        tipo: 'advertencia',
-        mensaje: `Acceso denegado. Rol requerido: ${roles.join(', ')}`,
+        accion: "acceso_denegado_rol",
+        tipo: "advertencia",
+        mensaje: `Acceso denegado. Rol requerido: ${roles.join(", ")}`,
         ip: req.ip,
-        user_agent: req.get('User-Agent'),
+        user_agent: req.get("User-Agent"),
         endpoint: req.path,
         metodo_http: req.method,
         status_code: 403,
-        detalles: { 
+        detalles: {
           rol_usuario: req.user.rol.nombre,
-          roles_requeridos: roles 
-        }
+          roles_requeridos: roles,
+        },
       });
 
-      return res.status(403).json({ 
-        error: 'Permisos insuficientes',
+      return res.status(403).json({
+        error: "Permisos insuficientes",
         rolRequerido: roles,
-        rolActual: req.user.rol.nombre
+        rolActual: req.user.rol.nombre,
       });
     }
 

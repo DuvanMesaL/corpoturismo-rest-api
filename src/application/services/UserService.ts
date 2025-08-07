@@ -1,11 +1,14 @@
-import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
-import { UserRepository } from '../../domain/repositories/UserRepository';
-import { UserRepositoryImpl } from '../../infrastructure/repositories/UserRepositoryImpl';
-import { emailService } from '../../infrastructure/services/email.service';
-import { logger, auditLogger } from '../../infrastructure/logging/winston-logger';
-import { CreateUserDto, User } from '../../domain/entities/User';
-import { generateTempPassword } from '../utils/password.utils';
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcryptjs";
+import { UserRepository } from "../../domain/repositories/UserRepository";
+import { UserRepositoryImpl } from "../../infrastructure/repositories/UserRepositoryImpl";
+import { emailService } from "../../infrastructure/services/email.service";
+import {
+  logger,
+  auditLogger,
+} from "../../infrastructure/logging/winston-logger";
+import { CreateUserDto, User } from "../../domain/entities/User";
+import { generateTempPassword } from "../utils/password.utils";
 
 export interface InviteUserResult {
   success: boolean;
@@ -26,12 +29,14 @@ export class UserService {
   ): Promise<InviteUserResult> {
     try {
       // Verificar que el email no esté ya registrado
-      const existingUser = await this.userRepository.findByEmail(userData.email);
-      
+      const existingUser = await this.userRepository.findByEmail(
+        userData.email
+      );
+
       if (existingUser) {
         return {
           success: false,
-          error: 'Ya existe un usuario con este email'
+          error: "Ya existe un usuario con este email",
         };
       }
 
@@ -44,7 +49,7 @@ export class UserService {
       const newUser = await this.userRepository.create({
         ...userData,
         uuid: userUuid,
-        password: hashedTempPassword
+        password: hashedTempPassword,
       });
 
       // Enviar email de invitación
@@ -60,41 +65,41 @@ export class UserService {
         await this.userRepository.delete(newUser.id);
         return {
           success: false,
-          error: 'Error enviando email de invitación'
+          error: "Error enviando email de invitación",
         };
       }
 
       // Log de auditoría
       auditLogger.log({
         usuario_id: inviterInfo.id,
-        accion: 'invitar_usuario',
-        tipo: 'exito',
-        entidad_afectada: 'usuarios',
+        accion: "invitar_usuario",
+        tipo: "exito",
+        entidad_afectada: "usuarios",
         mensaje: `Usuario invitado: ${userData.email}`,
         detalles: {
           email_invitado: userData.email,
           rol_asignado: userData.rolId,
-          uuid_generado: userUuid
-        }
+          uuid_generado: userUuid,
+        },
       });
 
       logger.info(`✅ Usuario invitado exitosamente: ${userData.email}`);
 
       return {
         success: true,
-        user: newUser
+        user: newUser,
       };
     } catch (error) {
-      logger.error('Error en UserService.inviteUser:', error);
+      logger.error("Error en UserService.inviteUser:", error);
       return {
         success: false,
-        error: 'Error interno del servidor'
+        error: "Error interno del servidor",
       };
     }
   }
 
   async getUsers(filters?: {
-    estado?: 'activo' | 'inactivo';
+    estado?: "activo" | "inactivo";
     rolId?: string;
     search?: string;
     page?: number;
@@ -103,7 +108,7 @@ export class UserService {
     try {
       return await this.userRepository.findAll(filters);
     } catch (error) {
-      logger.error('Error en UserService.getUsers:', error);
+      logger.error("Error en UserService.getUsers:", error);
       throw error;
     }
   }
@@ -112,21 +117,21 @@ export class UserService {
     try {
       return await this.userRepository.findById(id);
     } catch (error) {
-      logger.error('Error en UserService.getUserById:', error);
+      logger.error("Error en UserService.getUserById:", error);
       throw error;
     }
   }
 
   async updateUser(
-    id: string, 
+    id: string,
     updateData: Partial<User>,
     updaterInfo: { id: string; email: string }
   ) {
     try {
       const user = await this.userRepository.findById(id);
-      
+
       if (!user) {
-        throw new Error('Usuario no encontrado');
+        throw new Error("Usuario no encontrado");
       }
 
       const updatedUser = await this.userRepository.update(id, updateData);
@@ -134,9 +139,9 @@ export class UserService {
       // Log de auditoría
       auditLogger.log({
         usuario_id: updaterInfo.id,
-        accion: 'actualizar_usuario',
-        tipo: 'exito',
-        entidad_afectada: 'usuarios',
+        accion: "actualizar_usuario",
+        tipo: "exito",
+        entidad_afectada: "usuarios",
         mensaje: `Usuario actualizado: ${user.email}`,
         detalles: {
           usuario_actualizado: user.email,
@@ -144,31 +149,28 @@ export class UserService {
           valores_anteriores: Object.keys(updateData).reduce((acc, key) => {
             acc[key] = (user as any)[key];
             return acc;
-          }, {} as any)
-        }
+          }, {} as any),
+        },
       });
 
       return updatedUser;
     } catch (error) {
-      logger.error('Error en UserService.updateUser:', error);
+      logger.error("Error en UserService.updateUser:", error);
       throw error;
     }
   }
 
-  async deleteUser(
-    id: string,
-    deleterInfo: { id: string; email: string }
-  ) {
+  async deleteUser(id: string, deleterInfo: { id: string; email: string }) {
     try {
       const user = await this.userRepository.findById(id);
-      
+
       if (!user) {
-        throw new Error('Usuario no encontrado');
+        throw new Error("Usuario no encontrado");
       }
 
       // No permitir eliminar super admins
-      if (user.rol?.nombre === 'super_admin') {
-        throw new Error('No se puede eliminar un Super Administrador');
+      if (user.rol?.nombre === "super_admin") {
+        throw new Error("No se puede eliminar un Super Administrador");
       }
 
       await this.userRepository.delete(id);
@@ -176,19 +178,19 @@ export class UserService {
       // Log de auditoría
       auditLogger.log({
         usuario_id: deleterInfo.id,
-        accion: 'eliminar_usuario',
-        tipo: 'exito',
-        entidad_afectada: 'usuarios',
+        accion: "eliminar_usuario",
+        tipo: "exito",
+        entidad_afectada: "usuarios",
         mensaje: `Usuario eliminado: ${user.email}`,
         detalles: {
           usuario_eliminado: user.email,
-          rol_eliminado: user.rol?.nombre
-        }
+          rol_eliminado: user.rol?.nombre,
+        },
       });
 
       logger.info(`🗑️ Usuario eliminado: ${user.email}`);
     } catch (error) {
-      logger.error('Error en UserService.deleteUser:', error);
+      logger.error("Error en UserService.deleteUser:", error);
       throw error;
     }
   }
@@ -199,18 +201,18 @@ export class UserService {
   ): Promise<InviteUserResult> {
     try {
       const user = await this.userRepository.findById(userId);
-      
+
       if (!user) {
         return {
           success: false,
-          error: 'Usuario no encontrado'
+          error: "Usuario no encontrado",
         };
       }
 
-      if (user.estado === 'activo') {
+      if (user.estado === "activo") {
         return {
           success: false,
-          error: 'El usuario ya ha completado su registro'
+          error: "El usuario ya ha completado su registro",
         };
       }
 
@@ -221,7 +223,7 @@ export class UserService {
       // Actualizar contraseña temporal y fecha de invitación
       await this.userRepository.update(userId, {
         password: hashedTempPassword,
-        fechaInvitacion: new Date()
+        fechaInvitacion: new Date(),
       });
 
       // Reenviar email de invitación
@@ -235,31 +237,31 @@ export class UserService {
       if (!emailSent) {
         return {
           success: false,
-          error: 'Error reenviando email de invitación'
+          error: "Error reenviando email de invitación",
         };
       }
 
       // Log de auditoría
       auditLogger.log({
         usuario_id: resenderInfo.id,
-        accion: 'reenviar_invitacion',
-        tipo: 'exito',
-        entidad_afectada: 'usuarios',
+        accion: "reenviar_invitacion",
+        tipo: "exito",
+        entidad_afectada: "usuarios",
         mensaje: `Invitación reenviada a: ${user.email}`,
         detalles: {
-          email_destinatario: user.email
-        }
+          email_destinatario: user.email,
+        },
       });
 
       return {
         success: true,
-        user
+        user,
       };
     } catch (error) {
-      logger.error('Error en UserService.resendInvitation:', error);
+      logger.error("Error en UserService.resendInvitation:", error);
       return {
         success: false,
-        error: 'Error interno del servidor'
+        error: "Error interno del servidor",
       };
     }
   }

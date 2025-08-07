@@ -1,4 +1,4 @@
-import { Recalada, CreateRecaladaDto } from '../entities/Recalada';
+import { Recalada, CreateRecaladaDto } from "../entities/Recalada";
 
 export interface RecaladaRepository {
   create(recaladaData: CreateRecaladaDto): Promise<Recalada>;

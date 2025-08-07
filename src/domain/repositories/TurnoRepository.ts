@@ -1,4 +1,4 @@
-import { Turno, CreateTurnoDto } from '../entities/Turno';
+import { Turno, CreateTurnoDto } from "../entities/Turno";
 
 export interface TurnoRepository {
   create(turnoData: CreateTurnoDto & { creadorId: string }): Promise<Turno>;

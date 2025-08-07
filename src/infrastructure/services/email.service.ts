@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import { logger } from '../logging/winston-logger';
+import nodemailer from "nodemailer";
+import { logger } from "../logging/winston-logger";
 
 export interface EmailOptions {
   to: string;
@@ -13,25 +13,25 @@ export class EmailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
-      port: parseInt(process.env.BREVO_SMTP_PORT || '587'),
+      host: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
+      port: parseInt(process.env.BREVO_SMTP_PORT || "587"),
       secure: false,
       auth: {
         user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASS
-      }
+        pass: process.env.BREVO_SMTP_PASS,
+      },
     });
   }
 
   async sendInvitationEmail(
-    email: string, 
-    tempPassword: string, 
+    email: string,
+    tempPassword: string,
     invitationToken: string,
     inviterName: string
   ): Promise<boolean> {
     try {
       const invitationUrl = `${process.env.FRONTEND_URL}/auth/complete-registration?token=${invitationToken}`;
-      
+
       const html = this.generateInvitationTemplate(
         email,
         tempPassword,
@@ -41,13 +41,13 @@ export class EmailService {
 
       const mailOptions: EmailOptions = {
         to: email,
-        subject: '🚢 Invitación a CorpoTurismo - Completa tu registro',
+        subject: "🚢 Invitación a CorpoTurismo - Completa tu registro",
         html,
-        text: `Has sido invitado a CorpoTurismo. Visita: ${invitationUrl} y usa la contraseña temporal: ${tempPassword}`
+        text: `Has sido invitado a CorpoTurismo. Visita: ${invitationUrl} y usa la contraseña temporal: ${tempPassword}`,
       };
 
       await this.sendEmail(mailOptions);
-      
+
       logger.info(`✅ Email de invitación enviado a: ${email}`);
       return true;
     } catch (error) {
@@ -62,13 +62,13 @@ export class EmailService {
 
       const mailOptions: EmailOptions = {
         to: email,
-        subject: '🎉 ¡Bienvenido a CorpoTurismo!',
+        subject: "🎉 ¡Bienvenido a CorpoTurismo!",
         html,
-        text: `¡Bienvenido ${userName}! Tu cuenta ha sido activada exitosamente.`
+        text: `¡Bienvenido ${userName}! Tu cuenta ha sido activada exitosamente.`,
       };
 
       await this.sendEmail(mailOptions);
-      
+
       logger.info(`✅ Email de bienvenida enviado a: ${email}`);
       return true;
     } catch (error) {
@@ -79,11 +79,13 @@ export class EmailService {
 
   private async sendEmail(options: EmailOptions): Promise<void> {
     const mailOptions = {
-      from: `"CorpoTurismo" <${process.env.FROM_EMAIL || 'noreply@corpoturismo.com'}>`,
+      from: `"CorpoTurismo" <${
+        process.env.FROM_EMAIL || "noreply@corpoturismo.com"
+      }>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
-      text: options.text
+      text: options.text,
     };
 
     await this.transporter.sendMail(mailOptions);
